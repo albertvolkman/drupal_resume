@@ -40,5 +40,6 @@ function resume_theme($existing, $type, $theme, $path) {
 function _resume_display($uid) {
   $user = user_load($uid);
 
-  theme('resume', $user);
+  $array = array('name', $user->name);
+  print theme('resume', $array);
 }
