@@ -30,8 +30,8 @@ function resume_menu() {
  * Implements hook_theme()
  */
 function resume_theme($existing, $type, $theme, $path) {
-  return aray(
-    'resume' = array(
+  return array(
+    'resume' => array(
       'template' => 'resume',
     ),
   );
@@ -40,5 +40,5 @@ function resume_theme($existing, $type, $theme, $path) {
 function _resume_display($uid) {
   $user = user_load($uid);
 
-  print_r($user);
+  theme('resume', $user);
 }
