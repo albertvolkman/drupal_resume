@@ -33,13 +33,47 @@ function resume_theme($existing, $type, $theme, $path) {
   return array(
     'resume' => array(
       'template' => 'resume',
+      'variables' => array('values' => NULL),
     ),
   );
 }
 
 function _resume_display($uid) {
   $user = user_load($uid);
+//print_r($user);
 
-  $array = array('name', $user->name);
-  print theme('resume', $array);
+  $values['firstname'] = $user->field_firstname['und'][0]['safe_value'];
+  $values['lastname'] = $user->field_lastname['und'][0]['safe_value'];
+  $values['current_area'] = ucfirst($user->field_current_area['und'][0]['value']) . ', FL';
+  $values['zipcode'] = $user->field_zipcode['und'][0]['value'];
+  $values['objective'] = !empty($user->field_objective) ? $user->field_objective['und'][0]['safe_value'] : '';
+  $values['positions'] = !empty($user->field_positions) ? $user->field_positions['und'] : array();
+  $values['startwork'] = !empty($user->field_startwork) ? date('m/d/Y', strtotime($user->field_startwork['und'][0]['value'])) : '';
+  $values['contactemail'] = !empty($user->field_contactemail) ? $user->field_contactemail['und'][0]['email'] : '';
+  $values['available'] = !empty($user->field_available) ? $user->field_available['und'] : array();
+  $values['education'] = !empty($user->field_education) ? $user->field_education['und'][0]['value'] : '';
+  $values['achievements'] = !empty($user->field_achievements) ? format_results($user->field_achievements['und']) : '';
+  $values['skills'] = !empty($user->field_skills) ? format_results($user->field_skills['und'][0]) : '';
+  $values['armedforces'] = !empty($user->field_armedforces) ? $user->field_armedforces['und'][0]['value'] : '';
+  $values['experience'] = !empty($user->field_experience) ? $user->field_experience['und'] : array();
+  $values['reference'] = !empty($user->field_reference) ? $user->field_reference['und'] : array();
+
+  return theme('resume', $values);
+}
+
+function format_results($data) {
+  $output = array();
+  foreach ($data as $key => $value) {
+    if (is_array($value)) {
+      if (isset($value['safe_value'])) {
+        $output[] = $value['safe_value'];
+      } else if (isset($value['value'])) {
+        $output[] = $value['value'];
+      }
+    } else {
+      $output[] = $value['safe_value'];
+    }
+  }
+
+  return theme('item_list', array('items' => $output));
 }
