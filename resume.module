@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * Implements hook_permission()
+ */
+function resume_permission() {
+  return array(
+    'view resume' => array(
+      'title' => t('View Resume'),
+      'description' => t("View users' resumes"),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function resume_menu() {
+  $items['user/%/resume'] = array(
+    'title' => 'Resume',
+    'page callback' => '_resume_display',
+    'page arguments' => array(1),
+    'access arguments' => array('view resume'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme()
+ */
+function resume_theme($existing, $type, $theme, $path) {
+  return aray(
+    'resume' = array(
+      'template' => 'resume',
+    ),
+  );
+}
+
+function _resume_display($uid) {
+  $user = user_load($uid);
+
+  print_r($user);
+}
