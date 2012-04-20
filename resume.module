@@ -133,8 +133,10 @@ function template_preprocess_resume(&$vars) {
     $vars['experience'] = array();
   }
   $vars['reference'] = '';
-  foreach($user->field_reference['und'] as $data) {
-    $vars['reference'][] = $data;
+  if (isset($user->field_reference)) {
+    foreach($user->field_reference['und'] as $data) {
+      $vars['reference'][] = $data;
+    }
   }
 }
 
