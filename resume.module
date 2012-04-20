@@ -20,11 +20,9 @@ function resume_permission() {
  * Implements hook_menu()
  */
 function resume_menu() {
-  global $user;
   $items['user/resume'] = array(
     'title' => 'Resume',
-    'page callback' => '_resume_display',
-    'page arguments' => array($user->uid),
+    'page callback' => '_resume_your_display',
     'access arguments' => array('view own resume'),
     'type' => MENU_LOCAL_TASK,
   );
@@ -37,6 +35,35 @@ function resume_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function resume_block_info() {
+  $blocks['resume'] = array(
+    'info' => t('Resume'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function resume_block_view($delta) {
+  $uid = (int) arg(1);
+
+  $block = array();
+
+  switch ($delta) {
+    case 'resume':
+      $block['subject'] = t('Resume');
+      $block['content'] = l('Resume', 'user/' . $uid . '/resume');
+      break;
+  }
+
+  return $block;
 }
 
 /**
@@ -53,6 +80,13 @@ function resume_theme($existing, $type, $theme, $path) {
 
 function _resume_display($uid) {
   $user = user_load($uid);
+  drupal_set_title('Resume');
+  return theme('resume', array('user' => $user));
+}
+
+function _resume_your_display() {
+  global $user;
+  $user = user_load($user->uid);
   drupal_set_title('Resume');
   return theme('resume', array('user' => $user));
 }
@@ -78,21 +112,25 @@ function template_preprocess_resume(&$vars) {
   $vars['armedforces'] = field_view_field('user', $user, 'field_armedforces', 'default');
   $vars['experience'] = '';
   $experience_field = field_view_field('user', $user, 'field_experience', 'list');
-  foreach($experience_field[0]['#data']['rows'] as $data) {
-    $started_on = empty($data['started_on']) ? 0 : strtotime($data['started_on']);
-    $ended_on = empty($data['ended_on']) ? 'Current' : strtotime($data['ended_on']);
-    if (!empty($data['started_on']) && !empty($data['ended_on'])) {
-      $data['started_on'] = date('n/j/y', $started_on);
-      $data['ended_on'] = date('n/j/y', $ended_on);
-      $data['duration'] = dateDiff($started_on, $ended_on, 1);
-    } else if (!empty($data['started_on'])) {
-      $data['started_on'] = date('n/j/y', $started_on);
-      $data['ended_on'] = 'Current';
-      $data['duration'] = dateDiff($started_on, time(), 1);
-    } else {
-      $data['started_on'] = $data['ended_on'] = $data['duration'] = 0;
+  if (!empty($experience_field)) {
+    foreach($experience_field[0]['#data']['rows'] as $data) {
+      $started_on = empty($data['started_on']) ? 0 : strtotime($data['started_on']);
+      $ended_on = empty($data['ended_on']) ? 'Current' : strtotime($data['ended_on']);
+      if (!empty($data['started_on']) && !empty($data['ended_on'])) {
+        $data['started_on'] = date('n/j/y', $started_on);
+        $data['ended_on'] = date('n/j/y', $ended_on);
+        $data['duration'] = dateDiff($started_on, $ended_on, 1);
+      } else if (!empty($data['started_on'])) {
+        $data['started_on'] = date('n/j/y', $started_on);
+        $data['ended_on'] = 'Current';
+        $data['duration'] = dateDiff($started_on, time(), 1);
+      } else {
+        $data['started_on'] = $data['ended_on'] = $data['duration'] = 0;
+      }
+      $vars['experience'][] = $data;
     }
-    $vars['experience'][] = $data;
+  } else {
+    $vars['experience'] = array();
   }
   $vars['reference'] = '';
   foreach($user->field_reference['und'] as $data) {
